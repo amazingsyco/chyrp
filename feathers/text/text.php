@@ -4,8 +4,8 @@
             $this->setField(array("attr" => "title",
                                   "type" => "text",
                                   "label" => __("Title", "text"),
-                                  "optional" => true,
                                   "bookmarklet" => "title"));
+
             $this->setField(array("attr" => "body",
                                   "type" => "text_block",
                                   "label" => __("Body", "text"),
@@ -17,6 +17,7 @@
         }
 
         public function submit() {
+			echo "OH NOES TEXT";
             if (empty($_POST['body']))
                 error(__("Error"), __("Body can't be blank."));
 

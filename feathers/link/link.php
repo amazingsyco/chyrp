@@ -1,14 +1,15 @@
 <?php
     class Link extends Feathers implements Feather {
         public function __init() {
+            $this->setField(array("attr" => "title",
+                                  "type" => "text",
+                                  "label" => __("Title", "link"),
+                                  "bookmarklet" => "title"));
+
             $this->setField(array("attr" => "source",
                                   "type" => "text",
                                   "label" => __("URL", "link"),
                                   "bookmarklet" => "url"));
-            $this->setField(array("attr" => "name",
-                                  "type" => "text",
-                                  "label" => __("Name", "link"),
-                                  "bookmarklet" => "title"));
             $this->setField(array("attr" => "description",
                                   "type" => "text_block",
                                   "label" => __("Description", "link"),
@@ -16,7 +17,7 @@
                                   "preview" => true,
                                   "bookmarklet" => "selection"));
 
-            $this->setFilter("name", array("markup_title", "markup_post_title"));
+            $this->setFilter("title", array("markup_title", "markup_post_title"));
             $this->setFilter("description", array("markup_text", "markup_post_text"));
 
             $this->respondTo("feed_url", "set_feed_url");
@@ -29,9 +30,9 @@
             if (!@parse_url($_POST['source'], PHP_URL_SCHEME))
                 $_POST['source'] = "http://".$_POST['source'];
 
-            fallback($_POST['slug'], sanitize($_POST['name']));
+            fallback($_POST['slug'], sanitize($_POST['title']));
 
-            return Post::add(array("name" => $_POST['name'],
+            return Post::add(array("title" => $_POST['title'],
                                    "source" => $_POST['source'],
                                    "description" => $_POST['description']),
                              $_POST['slug'],
@@ -45,13 +46,13 @@
             if (!@parse_url($_POST['source'], PHP_URL_SCHEME))
                 $_POST['source'] = "http://".$_POST['source'];
 
-            $post->update(array("name" => $_POST['name'],
+            $post->update(array("title" => $_POST['title'],
                                 "source" => $_POST['source'],
                                 "description" => $_POST['description']));
         }
 
         public function title($post) {
-            $return = $post->name;
+            $return = $post->title;
             fallback($return, $post->title_from_excerpt());
             fallback($return, $post->source);
             return $return;

@@ -1,6 +1,20 @@
 <?php
     class Photo extends Feathers implements Feather {
         public function __init() {
+            $this->setField(array("attr" => "title",
+                                  "type" => "text",
+                                  "label" => __("Title", "link"),
+                                  "bookmarklet" => "title"));
+			$this->setField(array("attr" => "source_url",
+			                      "type" => "text",
+			                      "label" => __("Source URL", "link"),
+								  "optional" => true,
+			                      "bookmarklet" => "source_url"));
+			$this->setField(array("attr" => "source_name",
+			                      "type" => "text",
+			                      "label" => __("Credit to", "link"),
+								  "optional" => true,
+			                      "bookmarklet" => "source_name"));
             $this->setField(array("attr" => "photo",
                                   "type" => "file",
                                   "label" => __("Photo", "photo")));
@@ -17,8 +31,9 @@
                                   "label" => __("Caption", "photo"),
                                   "optional" => true,
                                   "preview" => true,
-                                  "bookmarklet" => "page_link"));
+                                  "bookmarklet" => "selection"));
 
+	    $this->setFilter("title", array("markup_title", "markup_post_title"));
             $this->setFilter("caption", array("markup_text", "markup_post_text"));
 
             $this->respondTo("delete_post", "delete_file");
@@ -71,11 +86,20 @@
             } else
                 $filename = $_POST['filename'];
 
-            return Post::add(array("filename" => $filename,
+            fallback($_POST['slug'], sanitize($_POST['title']));
+
+            return Post::add(array("title" => $_POST['title'],
+				   				   "filename" => $filename,
+				   				   "source_url" => $_POST['source_url'],
+				   				   "source_name" => $_POST['source_name'],
                                    "caption" => $_POST['caption']),
                              $_POST['slug'],
                              Post::check_url($_POST['slug']));
         }
+
+	public function title($post) {
+		return $post->title;
+	}
 
         public function update($post) {
             if (!isset($_POST['filename']))
@@ -92,16 +116,30 @@
                 $filename = $_POST['filename'];
             }
 
-            $post->update(array("filename" => $filename,
+            $post->update(array("tit;e" => $_POST['title'],
+								"filename" => $filename,
+			   				   "source_url" => $_POST['source_url'],
+			   				   "source_name" => $_POST['source_name'],
                                 "caption" => $_POST['caption']));
         }
 
-        public function title($post) {
-            return oneof($post->title_from_excerpt(), $post->filename);
-        }
         public function excerpt($post) {
             return $post->caption;
         }
+
+		public function caption_body($post) {
+			$caption = $post->caption;
+			if($post->source_name){
+				$caption .= "<p>Credit to ";
+				if($post->source_url){
+					$caption .= "<a href='$post->source_url'>$post->source_name</a>";
+				}else{
+					$caption .= $post->source_name;
+				}
+				$caption .= ".</p>";
+			}
+			return $caption;
+		}
 
         public function feed_content($post) {
             return self::image_tag($post, 500, 500)."<br /><br />".$post->caption;
@@ -117,6 +155,12 @@
             $post->image = $this->image_tag($post);
         }
 
+		public function image_url($post) {
+			if($post->source_url){
+				return $post->source_url;
+			}else return $post->url;
+		}
+
         public function image_tag($post, $max_width = 500, $max_height = null, $more_args = "quality=100") {
             $filename = $post->filename;
             $config = Config::current();
@@ -126,7 +170,7 @@
 
         public function image_link($post, $max_width = 500, $max_height = null, $more_args="quality=100") {
             $source = !empty($post->source) ? $post->source : uploaded($post->filename) ;
-            return '<a href="'.$source.'">'.$this->image_tag($post, $max_width, $max_height, $more_args).'</a>';
+            return '<a href="'.$this->image_url($post).'">'.$this->image_tag($post, $max_width, $max_height, $more_args).'</a>';
         }
 
         public function add_option($options, $post = null) {

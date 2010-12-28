@@ -1,6 +1,11 @@
 <?php
     class Audio extends Feathers implements Feather {
         public function __init() {
+            $this->setField(array("attr" => "title",
+                                  "type" => "text",
+                                  "label" => __("Title", "text"),
+                                  "bookmarklet" => "title"));
+
             $this->setField(array("attr" => "audio",
                                   "type" => "file",
                                   "label" => __("MP3 File", "audio")));
@@ -19,6 +24,7 @@
                                   "preview" => true,
                                   "bookmarklet" => "selection"));
 
+            $this->setFilter("title", array("markup_title", "markup_post_title"));
             $this->setFilter("description", array("markup_text", "markup_post_text"));
 
             $this->respondTo("delete_post", "delete_file");
@@ -49,7 +55,10 @@
             } else
                 $filename = $_POST['filename'];
 
-            return Post::add(array("filename" => $filename,
+            fallback($_POST['slug'], sanitize($_POST['title']));
+
+            return Post::add(array("title" => $_POST['title'],
+								   "filename" => $filename,
                                    "description" => $_POST['description']),
                              $_POST['slug'],
                              Post::check_url($_POST['slug']));
@@ -70,7 +79,8 @@
                 $filename = $_POST['filename'];
             }
 
-            $post->update(array("filename" => $filename,
+            $post->update(array("title" => $_POST['title'],
+								"filename" => $filename,
                                 "description" => $_POST['description']));
         }
 
@@ -128,12 +138,12 @@ var ap_clearID = setInterval( ap_registerPlayers, 100 );
 
         public function enclose_mp3($post) {
             $config = Config::current();
-            if ($post->feather != "audio" or !file_exists(uploaded($post->filename, false)))
+            if ($post->feather != "audio" or !file_exists(MAIN_DIR.$config->uploads_path.$post->filename))
                 return;
 
-            $length = filesize(uploaded($post->filename, false));
+            $length = filesize(MAIN_DIR.$config->uploads_path.$post->filename);
 
-            echo '          <link rel="enclosure" href="'.uploaded($post->filename).'" type="audio/mpeg" title="MP3" length="'.$length.'" />'."\n";
+            echo '          <link rel="enclosure" href="'.$config->chyrp_url.$config->uploads_path.$post->filename.'" type="audio/mpeg" title="MP3" length="'.$length.'" />'."\n";
         }
 
         public function flash_player_for($filename, $params = array(), $post) {

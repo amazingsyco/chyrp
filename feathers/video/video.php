@@ -1,6 +1,11 @@
 <?php
     class Video extends Feathers implements Feather {
         public function __init() {
+            $this->setField(array("attr" => "title",
+                                  "type" => "text",
+                                  "label" => __("Title", "text"),
+                                  "bookmarklet" => "title"));
+
             $this->setField(array("attr" => "video",
                                   "type" => "text_block",
                                   "rows" => 4,
@@ -20,16 +25,22 @@
             if ($this->isVideo())
                 $this->bookmarkletSelected();
 
+            $this->setFilter("title", array("markup_title", "markup_post_title"));
             $this->setFilter("caption", array("markup_text", "markup_post_text"));
 
             $this->respondTo("preview_video", "embed_tag");
         }
 
         public function submit() {
+			Flash::notice("submitting video");
+			
             if (empty($_POST['video']))
                 error(__("Error"), __("Video can't be blank."));
 
-            return Post::add(array("embed" => $this->embed_tag($_POST['video']),
+            fallback($_POST['slug'], sanitize($_POST['title']));
+
+            return Post::add(array("title" => $_POST['title'],
+								   "embed" => $this->embed_tag($_POST['video']),
                                    "video" => $_POST['video'],
                                    "caption" => $_POST['caption']),
                              $_POST['slug'],
@@ -40,13 +51,14 @@
             if (empty($_POST['video']))
                 error(__("Error"), __("Video can't be blank."));
 
-            $post->update(array("embed" => $this->embed_tag($_POST['video']),
+            $post->update(array("title" => $_POST['title'],
+								"embed" => $this->embed_tag($_POST['video']),
                                 "video" => $_POST['video'],
                                 "caption" => $_POST['caption']));
         }
 
         public function title($post) {
-            return $post->title_from_excerpt();
+            return $post->title;
         }
 
         public function excerpt($post) {
@@ -83,12 +95,18 @@
                 }
 
                 return $video;
-            }
+            }else{
+				return "BURRRRRRRRP";
+			}
 
             return $video;
         }
 
         public function embed_tag_for($post, $max_width = 500) {
+			if(!$post->embed){
+				$post->embed = $this->embed_tag($post->video);
+			}
+			
             $post->embed = preg_replace("/&([[:alnum:]_]+)=/", "&amp;\\1=", $post->embed);
 
             if (preg_match("/width(=\"|='|:\s*)([0-9]+)/", $post->embed, $width)) {

@@ -184,6 +184,8 @@
                 Flash::notice(__("Post created!"), $post->redirect);
             else
                 redirect($post->redirect);
+
+			return $post;
         }
 
         /**
