@@ -1,0 +1,27 @@
+{% extends "layouts/default.twig" %}
+
+{% block content %}
+{% if archives %} {# List? (For all/yearly archives) #}
+    {% for archive in archives %}
+		{% for post in archive.posts %}
+		   	<div class="postHeader">
+				<span class="postDate"><h2><a href="$post.url">${ post.created_at | strftime("%m|%d" | translate) }</a></h2></span>
+		   		{% if post['title'] %}
+		   			<h1><a href="$post.url" class="link">$post.title</a></h1>
+		   		{% endif %}
+		   	</div>
+		{% endfor %}			
+    {% endfor %}
+{% endif %}
+
+{% if posts.paginated %} {# Posts? (For daily/monthly archives) #}
+                    {% for post in posts.paginated %}
+                    {% include "feathers/" ~ post.feather ~ ".twig" %}
+                    {% endfor %}
+{% endif %}
+
+{% if not archives and not posts.paginated %} {# No results #}
+                    <h2>${ "No Posts" | translate }</h2>
+                    <p>${ "There aren't any posts in the timeframe you specified." | translate }</p>
+{% endif %}
+{% endblock %}

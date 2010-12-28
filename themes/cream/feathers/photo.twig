@@ -1,0 +1,15 @@
+{% extends "content/post.twig" %}
+
+{% block content %}
+<a class="invisible-slug" name="$post.slug">&nbsp;</a>
+<div class="postHeader">
+	<span class="postDate"><h2><a href="$post.url">${ post.created_at | strftime("%m|%d" | translate) }</a></h2></span>
+	{% if post['title'] %}
+		<h1><a href="$post.url" class="link">$post.title</a></h1>
+	{% endif %}
+</div>
+
+                        ${ feathers['photo'].image_link(post, 596) }
+                        <div class="clear"></div>
+                        ${ feathers['photo'].caption_body(post) | read_more }
+{% endblock %}

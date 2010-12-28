@@ -1,0 +1,12 @@
+{% extends "content/post.twig" %}
+
+{% block content %}
+<a class="invisible-slug" name="$post.slug">&nbsp;</a>
+<div class="postHeader">
+	<span class="postDate"><h2><a href="$post.url">${ post.created_at | strftime("%m|%d" | translate) }</a></h2></span>
+	{% if post['title'] %}
+		<h1><a href="$post.source" class="link">$post.title</a></h1>
+	{% endif %}
+</div>
+                        ${ post.description | read_more }
+{% endblock %}

@@ -1,0 +1,67 @@
+            <div id="sidebar">
+					<h1>About</h1>
+					<p>
+						$site.description
+					</p>
+<!--					<h1>Archive</h1>
+					<div id="calendar"></div>
+-->					
+<!--					<h1><a href="https://twitter.com/SteveStreza">Latest update</a></h1> 
+					<p id="sidebar-status"></p> -->
+					
+					{% if ((posts.paginated | count) > 1) %}
+						<h1>On This Page</h1>
+                    	<p id="sidebar-contents">
+							{% for post in posts.paginated %}
+								<a href="#$post.slug">$post.title</a><br/>
+			                {% else %}
+							<div class="sidebar-row">
+								No posts.
+							</div>
+							{% endfor %}
+						</p>
+					{% endif %}
+					
+					{% if tags %}
+						<h1><a href="{% url "tags" %}">${ "Artists" | translate }</a></h1>
+						<div id="sidebar-categories" class="wrap-more">
+					    	{% for tag in tags %}
+								<div class="sidebar-row">
+					        		<a href="{% url "tag/" ~ tag.url %}" title="${ "%d post tagged &quot;%s&quot;" | translate_plural("%d posts tagged &quot;%s&quot;", tag.popularity) | format(tag.popularity, (tag.name | escape)) }">$tag.name</a>
+					        		<span class="sub"> $tag.popularity</span>
+								</div>
+					    	{% endfor %}
+						</div>
+					{% endif %}					
+
+                {% if theme.pages_list %}
+                <h1>${ "Pages" | translate }</h1>
+                <ul>
+                    {% for item in theme.pages_list %}
+                    <li>
+                        <a href="$item.page.url">$item.page.title</a>
+
+                        {% if item.has_children %}<ul>{% endif %}
+                    	{% if not item.has_children %}</li>{% endif %}
+                    	{% for ul, li in item.end_tags %}
+                        	$ul
+                    		$li
+                    	{% endfor %}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+				${ trigger.call("sidebar") }
+				
+                {% if false and theme.archives_list %}
+                <h1><a href="{% url "archive" %}">Archives</a></h1>
+	                <div id="sidebar-archives" class="wrap-more">
+                    	{% for archive in theme.archives_list %}
+							<div class="sidebar-row">
+                	        	<a href="$archive.url">${ archive.when | strftime("%B %Y" | translate) }</a>
+            	            	<span class="sub"> $archive.count</span>
+							</div>
+    	                {% endfor %}
+	                </div>
+                {% endif %}
+            </div>

@@ -1,0 +1,41 @@
+<div class="post $post.feather" id="post_$post.id">
+
+    {% block content %}{% endblock %}
+
+	<div class="clear"></div>
+	<span class="info">
+	    {% if enabled_modules.categorize and post.category.id != 0 %}
+		    |
+		    <a href="$post.category.url" rel="tag">$post.category.name</a>
+	    {% endif %}
+    	{% if enabled_modules.comments %}
+	    	|
+	    	<a href="$post.url#comments">${ "%s Comment" | translate_plural("%s Comments", post.comment_count) | format(post.comment_count) }</a>
+	    {% endif %}
+		{% if (post.editable or post.deletable) or (post.linked_tags | length > 0) %}
+    		<div class="postBar">
+	    		<span class="controls">
+					{% if post.editable or post.deletable %}
+					   	$post.edit_link
+				    	${ post.delete_link("Delete" | translate, " | ") }
+					{% endif %}
+	    		</span>
+    			<span class="tags">
+					{% if post.linked_tags | length > 0 %}
+				    	${ post.linked_tags | join(", ") }&nbsp;&nbsp;&nbsp;${ "Artists" | translate }
+			    	{% endif %}
+			    </span>
+			    <div class="clear"></div>
+			</div>
+		{% endif %}
+	</span>
+	{% if route.action == "view" and post.paginated and post.paginated.pages > 1 %}
+
+		<div class="pages">
+			&nbsp;
+			{% if not post.prev.no_results %}<a class="left prev_post"  href="$post.prev.url">&larr; ${ post.prev.title | truncate(40) }</a>{% endif %}
+			{% if not post.next.no_results %}<a class="right next_post" href="$post.next.url">${ post.next.title | truncate(40) } &rarr;</a>{% endif %}
+			<div class="clear"></div>
+		</div>
+	{% endif %}
+</div>
