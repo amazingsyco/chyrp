@@ -221,7 +221,7 @@
         # Function: metaWeblog_newPost
         # Creates a new post.
         #
-         public function metaWeblog_newPost($args) {
+        public function metaWeblog_newPost($args) {
             $this->auth($args[1], $args[2], 'add');
             global $user;
 
@@ -241,10 +241,8 @@
             $url = Post::check_url($clean);
 
             $_POST['user_id'] = $user->id;
-            $_POST['feather'] = $args[3]['feather'];
+            $_POST['feather'] = XML_RPC_FEATHER;
             $_POST['created_at'] = oneof($this->convertFromDateCreated($args[3]), datetime());
-			$_POST['tags']   = $args[3]['mt_tags'];
-			$_POST['caption'] = "&nbsp;";
 
             if ($user->group->can('add_post'))
                 $_POST['status'] = ($args[4]) ? 'public' : 'draft';
@@ -254,16 +252,12 @@
             $trigger = Trigger::current();
             $trigger->call('metaWeblog_newPost_preQuery', $args[3]);
 
-			$_POST['title'] = $args[3]['title'];
-			$_POST['body' ] = $body;
-
-			if(array_key_exists("video", $args[3]))
-				$_POST["video"] = $args[3]['video'];
-
-			if(array_key_exists("caption", $args[3]))
-				$_POST["caption"] = $args[3]['caption'];
-
-			$post = Feathers::$instances[$_POST['feather']]->submit();
+            $post = Post::add(
+                              array(
+                                    'title' => $args[3]['title'],
+                                    'body'  => $body),
+                              $clean,
+                              $url);
 
             if ($post->no_results)
                 return new IXR_Error(500, __("Post not found."));
@@ -501,7 +495,6 @@
         # Authenticates a given login and password, and checks for appropriate permission
         #
         private function auth($login, $password, $do = 'add') {
-#			echo "Login ".$login." ".$password;
             if (!Config::current()->enable_xmlrpc)
                 throw new Exception(__("XML-RPC support is disabled for this site."));
 
